@@ -1,0 +1,13 @@
+# .travis.yml
+language: "go"
+dist: "xenial"
+os:
+  - "linux"
+go:
+  - "1.13"
+  - "1.13.7"
+  - "1.14.1"
+
+script:
+  - go test test/*.go -v
+  - go test test/*.go -bench=.
