@@ -10,26 +10,33 @@ import (
 
 // Dispatcher is in charge of a topic
 type Dispatcher struct {
-	chans map[string]chan<- mhub.Message
+	chans []chan<- mhub.Message
 	sync.RWMutex
 }
 
 // NewDispatcher create new Dispatcher
 func NewDispatcher() *Dispatcher {
-	return &Dispatcher{chans: make(map[string]chan<- mhub.Message, 1)}
+	return &Dispatcher{chans: make([]chan<- mhub.Message, 0, 0)}
 }
 
 // Add one subscriber to the topic
-func (d *Dispatcher) Add(ch chan<- mhub.Message, name string) {
+func (d *Dispatcher) Add(ch chan<- mhub.Message) {
 	d.Lock()
 	defer d.Unlock()
-	d.chans[name] = ch
+	d.chans = append(d.chans, ch)
 }
 
-func (d *Dispatcher) Remove(name string) {
+// Remove removes a chan from chans
+func (d *Dispatcher) Remove(ch chan mhub.Message) {
 	d.Lock()
 	defer d.Unlock()
-	delete(d.chans, name)
+	nch := make([]chan<- mhub.Message, len(ch))
+	for i := 0; i < len(d.chans); i++ {
+		if ch != d.chans[i] {
+			nch = append(nch, d.chans[i])
+		}
+	}
+	d.chans = nch
 }
 
 func (d *Dispatcher) send(ch chan<- mhub.Message, msg mhub.Message) {

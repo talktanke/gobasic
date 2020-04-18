@@ -47,26 +47,34 @@ func (i *inMemory) Publish(ctx context.Context, topic string, msg interface{}) {
 	d.putOneByOne(ctx, sub)
 }
 
-func (i *inMemory) Subscribe(ctx context.Context, topic, name string) mhub.Subscription {
+// Subscribe subscribe one topic return a instance of subscription for getting message.
+func (i *inMemory) Subscribe(ctx context.Context, option *mhub.SubscriptionOptions) mhub.Subscription {
+	if option.BufferSize < 0 {
+		option.BufferSize = 0
+	}
 	// TODO: buffer should be a parameter.....
-	ch := make(chan mhub.Message, 64)
+	ch := make(chan mhub.Message, option.BufferSize)
 	ready := make(chan struct{})
 	ctx, sub := newSubscription(ctx, ch)
-	go i.watch(ctx, topic, name, sub, ready)
+	go i.watch(ctx, option.Topics, sub, ready)
 	<-ready
 	return sub
 }
 
-func (i *inMemory) watch(ctx context.Context, topic, name string, sub *subscription, ready chan<- struct{}) {
+func (i *inMemory) watch(ctx context.Context, topics []string, sub *subscription, ready chan<- struct{}) {
 	defer func() {
 		sub.cancel()
-		log.Debugf("%s stop subscribe topic %s", name, topic)
-		d := i.getDispatcher(topic)
-		d.Remove(name)
+		log.Debugf("stop subscribe topic %v", topics)
+		for _, t := range topics {
+			d := i.getDispatcher(t)
+			d.Remove(sub.ch)
+		}
 		close(sub.ch)
 	}()
-	d := i.getDispatcher(topic)
-	d.Add(sub.ch, name)
+	for _, t := range topics {
+		d := i.getDispatcher(t)
+		d.Add(sub.ch)
+	}
 	ready <- struct{}{}
 	<-ctx.Done()
 }
