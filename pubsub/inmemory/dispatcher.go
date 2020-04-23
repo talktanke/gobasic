@@ -4,33 +4,35 @@ import (
 	"context"
 	"sync"
 
-	"github.com/dashjay/gobasic/log"
-	"github.com/dashjay/gobasic/mhub"
+	"github.com/talktanke/gobasic/log"
+	"github.com/talktanke/gobasic/pubsub"
+
+
 )
 
 // Dispatcher is in charge of a topic
 type Dispatcher struct {
-	chans []chan<- mhub.Message
+	chans []chan<- pubsub.Message
 	sync.RWMutex
 }
 
 // NewDispatcher create new Dispatcher
 func NewDispatcher() *Dispatcher {
-	return &Dispatcher{chans: make([]chan<- mhub.Message, 0, 0)}
+	return &Dispatcher{chans: make([]chan<- pubsub.Message, 0, 0)}
 }
 
 // Add one subscriber to the topic
-func (d *Dispatcher) Add(ch chan<- mhub.Message) {
+func (d *Dispatcher) Add(ch chan<- pubsub.Message) {
 	d.Lock()
 	defer d.Unlock()
 	d.chans = append(d.chans, ch)
 }
 
 // Remove removes a chan from chans
-func (d *Dispatcher) Remove(ch chan mhub.Message) {
+func (d *Dispatcher) Remove(ch chan pubsub.Message) {
 	d.Lock()
 	defer d.Unlock()
-	nch := make([]chan<- mhub.Message, len(ch))
+	nch := make([]chan<- pubsub.Message, len(ch))
 	for i := 0; i < len(d.chans); i++ {
 		if ch != d.chans[i] {
 			nch = append(nch, d.chans[i])
@@ -39,7 +41,7 @@ func (d *Dispatcher) Remove(ch chan mhub.Message) {
 	d.chans = nch
 }
 
-func (d *Dispatcher) send(ch chan<- mhub.Message, msg mhub.Message) {
+func (d *Dispatcher) send(ch chan<- pubsub.Message, msg pubsub.Message) {
 	select {
 	case ch <- msg:
 		return
@@ -49,7 +51,7 @@ func (d *Dispatcher) send(ch chan<- mhub.Message, msg mhub.Message) {
 }
 
 // putOneByOne like it's name, put message one to subscriber one by one
-func (d *Dispatcher) putOneByOne(ctx context.Context, message mhub.Message) {
+func (d *Dispatcher) putOneByOne(ctx context.Context, message pubsub.Message) {
 	d.RLock()
 	chans := d.chans
 	d.RUnlock()

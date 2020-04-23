@@ -7,14 +7,14 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/dashjay/gobasic/mhub"
-	"github.com/dashjay/gobasic/mhub/inmemory"
+	"github.com/talktanke/gobasic/pubsub"
+	"github.com/talktanke/gobasic/pubsub/inmemory"
 )
 
 func TestInMemory(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	inm := inmemory.New()
-	sub := inm.Subscribe(ctx, mhub.NewSubscriptionOptions(64, "love", "hate"))
+	sub := inm.Subscribe(ctx, pubsub.NewSubscriptionOptions(64, "love", "hate"))
 	ch := sub.Chan()
 	inm.Publish(ctx, "love", 1)
 	msg := <-ch
@@ -30,8 +30,8 @@ func TestInMemory(t *testing.T) {
 func TestInMemoryMultiSubscriber(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	inm := inmemory.New()
-	dj1 := inm.Subscribe(ctx, mhub.NewSubscriptionOptions(64, "love", "hate"))
-	dj2 := inm.Subscribe(ctx, mhub.NewSubscriptionOptions(64, "love", "hate"))
+	dj1 := inm.Subscribe(ctx, pubsub.NewSubscriptionOptions(64, "love", "hate"))
+	dj2 := inm.Subscribe(ctx, pubsub.NewSubscriptionOptions(64, "love", "hate"))
 	ch1 := dj1.Chan()
 	ch2 := dj2.Chan()
 	inm.Publish(ctx, "love", 666)
@@ -45,8 +45,8 @@ func TestInMemoryMultiSubscriber(t *testing.T) {
 func BenchmarkInMemory(b *testing.B) {
 	ctx, cancel := context.WithCancel(context.Background())
 	inm := inmemory.New()
-	dj1 := inm.Subscribe(ctx, mhub.NewSubscriptionOptions(64, "love", "hate"))
-	dj2 := inm.Subscribe(ctx, mhub.NewSubscriptionOptions(64, "love", "hate"))
+	dj1 := inm.Subscribe(ctx, pubsub.NewSubscriptionOptions(64, "love", "hate"))
+	dj2 := inm.Subscribe(ctx, pubsub.NewSubscriptionOptions(64, "love", "hate"))
 
 	done := make(chan struct{})
 	go func() {

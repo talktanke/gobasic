@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/dashjay/gobasic/time/backoff"
+	"github.com/talktanke/gobasic/time/backoff"
 )
 
 func TestBackOff(t *testing.T) {

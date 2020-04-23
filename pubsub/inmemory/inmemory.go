@@ -4,23 +4,23 @@ import (
 	"context"
 	"sync"
 
-	"github.com/dashjay/gobasic/log"
-	"github.com/dashjay/gobasic/mhub"
+	"github.com/talktanke/gobasic/log"
+	"github.com/talktanke/gobasic/pubsub"
 )
 
 // subscription will be hold by subscriber to get the published message
 type subscription struct {
-	ch     chan mhub.Message
+	ch     chan pubsub.Message
 	cancel context.CancelFunc
 }
 
 // newSubscription new a  subscription
-func newSubscription(ctx context.Context, ch chan mhub.Message) (context.Context, *subscription) {
+func newSubscription(ctx context.Context, ch chan pubsub.Message) (context.Context, *subscription) {
 	subCtx, cancel := context.WithCancel(ctx)
 	return subCtx, &subscription{ch: ch, cancel: cancel}
 }
 
-func (s *subscription) Chan() <-chan mhub.Message {
+func (s *subscription) Chan() <-chan pubsub.Message {
 	return s.ch
 }
 
@@ -43,17 +43,17 @@ func New() *inMemory {
 // Publish publishes a message to the topic
 func (i *inMemory) Publish(ctx context.Context, topic string, msg interface{}) {
 	d := i.getDispatcher(topic)
-	sub := mhub.FromMessage(topic, msg)
+	sub := pubsub.FromMessage(topic, msg)
 	d.putOneByOne(ctx, sub)
 }
 
 // Subscribe subscribe one topic return a instance of subscription for getting message.
-func (i *inMemory) Subscribe(ctx context.Context, option *mhub.SubscriptionOptions) mhub.Subscription {
+func (i *inMemory) Subscribe(ctx context.Context, option *pubsub.SubscriptionOptions) pubsub.Subscription {
 	if option.BufferSize < 0 {
 		option.BufferSize = 0
 	}
 	// TODO: buffer should be a parameter.....
-	ch := make(chan mhub.Message, option.BufferSize)
+	ch := make(chan pubsub.Message, option.BufferSize)
 	ready := make(chan struct{})
 	ctx, sub := newSubscription(ctx, ch)
 	go i.watch(ctx, option.Topics, sub, ready)

@@ -1,11 +1,11 @@
-package mhub
+package pubsub
 
 import (
 	"context"
 )
 
-// MHub a hub use to publish a series of message, in different of medium like memory or tcp....
-type MHub interface {
+// Pubsub a hub use to publish a series of message, in different of medium like memory or tcp....
+type Pubsub interface {
 	// Publish a message so that the hub will push these message one by one to subscriber.
 	Publish(ctx context.Context, topic string, message interface{})
 

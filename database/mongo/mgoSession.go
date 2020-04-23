@@ -3,7 +3,7 @@ package mongo
 import (
 	"github.com/globalsign/mgo"
 
-	"github.com/dashjay/gobasic/log"
+	"github.com/talktanke/gobasic/log"
 )
 
 // MgoSession is a tool to connect the mongodb use mgo

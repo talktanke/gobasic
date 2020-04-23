@@ -1,4 +1,4 @@
-package mhub
+package pubsub
 
 // base, all message has one base which show the basic of a message
 type base struct {

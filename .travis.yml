@@ -10,4 +10,3 @@ go:
 
 script:
   - go test test/*.go -v
-  - go test test/*.go -bench=.
