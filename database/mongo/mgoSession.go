@@ -1,8 +1,6 @@
 package mongo
 
 import (
-	"strings"
-
 	"github.com/globalsign/mgo"
 
 	"github.com/talktanke/gobasic/log"
@@ -28,7 +26,7 @@ func NewDefaultMgoSession(config *mgo.DialInfo) *MgoSession {
 	return &MgoSession{s: Mongo, dbname: config.Database}
 }
 
-func NewMgoWithUrl(url string) *MgoSession {
+func NewMgoWithUrl(url string, dbname string) *MgoSession {
 	var (
 		err   error
 		Mongo *mgo.Session
@@ -39,8 +37,8 @@ func NewMgoWithUrl(url string) *MgoSession {
 	}
 	Mongo.SetMode(mgo.Monotonic, true)
 	log.Infof("Connect MongoDB success with addresses:%v", url)
-	res := strings.Split(url, "/")
-	return &MgoSession{s: Mongo, dbname: res[len(res)-1]}
+
+	return &MgoSession{s: Mongo, dbname: dbname}
 }
 
 // CopySession can copy a connection but reuse the auth info....
